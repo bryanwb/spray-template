@@ -1,6 +1,6 @@
 package com.example
 
-import akka.actor.{ActorSystem, Props}
+import akka.actor.{ActorSystem, Props, Actor}
 import akka.io.IO
 import spray.can.Http
 import akka.pattern.ask
@@ -18,4 +18,16 @@ object Boot extends App {
   implicit val timeout = Timeout(5.seconds)
   // start a new HTTP server on port 8080 with our service actor as the handler
   IO(Http) ? Http.Bind(service, interface = "localhost", port = 8080)
+
+  val Tick = "tick"
+
+  class TickActor extends Actor {
+    def receive = {
+      case Tick => println("hello!")
+    }
+  }
+  val tickActor = system.actorOf(Props(classOf[TickActor]))
+  import system.dispatcher
+
+  system.scheduler.schedule(0 seconds, 10 seconds, tickActor, Tick)
 }
